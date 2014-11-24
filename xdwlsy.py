@@ -46,20 +46,20 @@ class Spider:
     
                 else:    
                 	print 'No exception was raised.'  
-	def query(self):
+	def query_scores(self):
 		if self.query:
 			#打开成绩查询的页面
 			result = self.opener.open(self.score_url)
 			decode_result = result.read().decode('gb2312').encode('utf-8')
-	    	        myItems = re.findall('<tr>.*?<td.*?<td.*?><a.*?>(.*?)</a></td>.*?<td.*?<td.*?<td.*?<td.*?<td.*?<td.*?><span>(.*?)</span></td>.*?</tr>',decode_result,re.S)
-		        #获取实验名，成绩
-		        if myItems:
-		            print 'query ok'
-		        else:
-		            print 'query error'
-		        for item in myItems:
-		            print '实验名: ' + item[0]
-		            print '成绩：' + item[1]
+			myItems = re.findall('<tr>.*?<td.*?<td.*?><a.*?>(.*?)</a></td>.*?<td.*?<td.*?<td.*?<td.*?<td.*?<td.*?><span>(.*?)</span></td>.*?</tr>',decode_result,re.S)
+			#获取实验名，成绩
+			if myItems:
+				print 'query ok'
+				for item in myItems:
+					print '实验名: ' + item[0]
+					print '成绩：' + item[1]
+			else:
+				print 'query error'
 
 id = raw_input('id:')
 pwd = raw_input('password:')
@@ -68,4 +68,4 @@ my_spider = Spider(id , pwd)
 my_spider.login()
 print 'Enter any key to query'
 raw_input()
-my_spider.query()
+my_spider.query_scores()
