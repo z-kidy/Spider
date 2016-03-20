@@ -3,6 +3,10 @@ import urllib2
 import urllib
 import cookielib
 import re
+import sys
+
+reload(sys) 
+sys.setdefaultencoding( "utf-8" )
 
 def get_hash(url, opener):
     c = opener.open(url).read()
@@ -14,169 +18,129 @@ def get_hash(url, opener):
     return formhash
 
 class Spider():
-	def __init__(self):
-		self.front_page_url = 'http://rs.xidian.edu.cn/forum.php'
-		self.loginurl = 'http://rs.xidian.edu.cn/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes'
-		self.shuiQu_url = 'http://rs.xidian.edu.cn/forum.php?mod=forumdisplay&fid=72&page=1'
-		#self.loginurl = 'http://rs.xidian.edu.cn/member.php?mod=logging&action=login&loginsubmit=yes&handlekey=login&loginhash=LSYxX'
-		self.postdata = urllib.urlencode( {
-		'username' :'z-kidy' ,
-		#'password' :'11457bcfca5888626a7a9c8a6de792fd',
-		'password' :'jindi13587741703',
-		'quickforward' :'yes',
-		'handlekey' :'ls',
-		} )
-		self.headers   = {
-			'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:29.0) Gecko/20100101 Firefox/29.0' 
-		}
-		self.cookieJar = cookielib.CookieJar()
-		self.opener    = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
+    def __init__(self, username=None, password=None):
+        self.front_page_url = 'http://rs.xidian.edu.cn/'
+        self.loginurl = 'http://rs.xidian.edu.cn/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes'
+        self.shuiQu_url = 'http://rs.xidian.edu.cn/forum.php?mod=forumdisplay&fid=72&page=1'
+        self.postdata = urllib.urlencode({
+        'username': username,
+        'password': password,
+        'quickforward': 'yes',
+        'handlekey': 'ls',
+        } )
+        self.headers   = {
+            'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:29.0) Gecko/20100101 Firefox/29.0' 
+        }
+        self.cookieJar = cookielib.CookieJar()
+        self.opener    = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
 
-	def login(self):
+    def login(self):
 
-		req = urllib2.Request(
-			url = self.loginurl,
-			data= self.postdata,
-			headers = self.headers
-		)
+        req = urllib2.Request(
+            url = self.loginurl,
+            data= self.postdata,
+            headers = self.headers
+        )
 
-		try:
-			response = self.opener.open(req)
+        try:
+            response = self.opener.open(req)
+        except Exception, e:  
+            print e
+        else:
+            print 'No exception was raised.'
 
-		except urllib2.URLError, e:  
-			if hasattr(e, 'code'):    
-				print 'The server couldn\'t fulfill the request.'       
-				print 'Error code: ', e.code  
-			elif hasattr(e, 'reason'):    
-				print 'We failed to reach a server.'    
-				print 'Reason: ', e.reason    
 
-		else:
-			print 'No exception was raised.'
+    def dailySign(self):
+        url = 'http://rs.xidian.edu.cn/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1'
+        formhash = get_hash('http://rs.xidian.edu.cn/plugin.php?id=dsu_paulsign:sign', self.opener)
 
-		#response.read()
-		#response = self.opener.open(self.front_page_url)
-		#fq = open('rs2.html','w')
-		#fq.writelines(response.read())  
-
-	def dailySign(self):
-		url = 'http://rs.xidian.edu.cn/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1'
-		formhash = get_hash('http://rs.xidian.edu.cn/plugin.php?id=dsu_paulsign:sign', self.opener)
-		print formhash
-
-		data = urllib.urlencode( {
+        data = urllib.urlencode({
                     'formhash' : formhash,
                     'qdxq' : 'kx',
                     'qdmode' : '3',
-                    'todaysay' : '',	
+                    'todaysay' : '',    
                     'fastreply' : '0'
-		})
+        })
 
-		req = urllib2.Request(
-			url = url,
-			data = data,
-			headers =self.headers
-		)
+        req = urllib2.Request(
+            url = url,
+            data = data,
+            headers =self.headers
+        )
 
+        try:
+            response = self.opener.open(req)
+        except Exception, e:
+            print e  
 
-		try:
-			response = self.opener.open(req)
-		except urllib2.URLError, e:  
-			if hasattr(e, 'code'):    
-				print 'The server couldnt fulfill the request.'       
-				print 'Error code: ', e.code  
-			elif hasattr(e, 'reason'):    
-				print 'We failed to reach a server.'    
-				print 'Reason: ', e.reason    
+        else:
+            print 'No exception was raised.'
+            c = response.read(500)
+            print c[c.index('<div class="c"')+15:c.index('</div>')]
+            #return '操作成功完成'
 
-		else:
-			print 'No exception was raised.'
-			c = response.read(500)
-			print c[c.index('<div class="c"')+15:c.index('</div>')]
-			#return '操作成功完成'
+  
+    def comment(self, tid):
+        url = self.front_page_url + 'forum.php?mod=post&action=reply&fid=72&tid=%s&extra=&replysubmit=yes&infloat=yes&handlekey=fastpost' % str(tid)
 
-			#<form id="qiandao" onkeydown="if(event.keyCode==13){showWindow('qwindow', 'qiandao', 'post', '0');return false}" action="plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1" method="post"></form>	
-	
-	def Comment(self,url):
-		#message=%E6%88%91%E6%98%AF%E6%9D%A5%E6%8B%BF%E9%87%91%E5%B8%81%E7%9A%84&posttime=1416644383&formhash=023d4eb8&usesig=1&subject=++
-		#formhash=023d4eb8&handlekey=reply&noticeauthor=&noticetrimstr=&noticeauthormsg=&usesig=1&subject=&message=%E6%88%91%E6%98%AF%E6%9D%A5%E6%8B%BF%E9%87%91%E5%B8%81%E7%9A%84
-		data = 'formhash=023d4eb8&handlekey=reply&noticeauthor=&noticetrimstr=&noticeauthormsg=&usesig=1&subject=&message=%E6%88%91%E6%98%AF%E6%9D%A5%E6%8B%BF%E9%87%91%E5%B8%81%E7%9A%84'
-		#formhash=023d4eb8&handlekey=reply&noticeauthor=&noticetrimstr=&noticeauthormsg=&usesig=1&subject=&message=%E6%88%91%E6%98%AF%E6%9D%A5%E6%8B%BF%E9%87%91%E5%B8%81%E7%9A%84
-		req = urllib2.Request(
-			url = url,
-			data= data,
-			headers = self.headers
-		)
+        formhash = get_hash('http://rs.xidian.edu.cn/forum.php?mod=viewthread&tid=%s'%tid, self.opener)
 
-		try:
-			response = self.opener.open(req)
-		except urllib2.URLError, e:  
-			if hasattr(e, 'code'):    
-				print 'The server couldn\'t fulfill the request.'       
-				print 'Error code: ', e.code  
-			elif hasattr(e, 'reason'):    
-				print 'We failed to reach a server.'    
-				print 'Reason: ', e.reason    
+        data = urllib.urlencode({
+                    'formhash': formhash,
+                    'message': u'我是来拿点金币的',
+                    'usesig': '1',
+        })
 
-		else:
-			print 'No exception was raised.'
-		#print 'sucess Comment'
-		#response = self.opener.open(url)
+        req = urllib2.Request(
+            url = url,
+            data= data,
+            headers = self.headers
+        )
 
-	def guanShui(self):
-		req = self.opener.open(self.shuiQu_url)
-		decode_req = req.read()
-		fq = open('rs.html','w')
-		fq.writelines(decode_req)
+        try:
+            response = self.opener.open(req)
+        except Exception, e:  
+            print e
 
-		#Items = re.findall('.*?<tbody id="no.*?">.*?<tr.*?<td.*?<th.*?<a.*?<a href="(.*?)".*?>(.*?)</a>.*?<span class="xi1">.*?回帖(.*?)</span>.*?</tbody>',decode_req,re.S)
-		Items = re.findall(u'.*?<tbody id="no.*?<tr.*?<td.*?<th.*?<a.*?<a href="(.*?)".*?>(.*?)</a>.*?</tbody>',decode_req,re.S)
-		#Items = re.findall('.*?<tbody id=.*?<tr.*?<td.*?<th.*?<a.*?<a href="(.*?)".*?>(.*?)</a>.*?<span class="xi.*?>(.*?)</span>.*?</tbody>',decode_req,re.S)
-		if Items:
-			print 'yes'
-			for item in Items:
-				print item[0].replace('&amp;','&')
-				print item[1]
+        else:
+            if '成功' in response.read(500):
+                print u'水了一贴'
+        
 
-				#print item[2]
-				'''matchObj = re.match('.*回帖.*<strong>(.*?)</strong>.*',item[2])
-				if matchObj:
-					print item[1]
-					#print matchObj.group(1)
-					print item[2]
-				else:
-					print 'no match'
-					'''
-		else:
-			print 'no'
+    def guanShui(self):
+        req = self.opener.open(self.shuiQu_url)
+        decode_req = req.read()
+        fq = open('rs.html','w')
+        fq.writelines(decode_req)
 
+        items = re.findall(u'.*?<tbody id="no.*?<tr.*?<td.*?<th.*?<a.*?<a href="(.*?)".*?>(.*?)</a>.*?</tbody>',decode_req,re.S)
+        
+        if items:
+            for item in items:
+                if '散金币' in item[1]:    # topic title
+                    print item[1]
+                    topic_url = item[0].replace('&amp;', '&')   # topic url
+                    tid = re.match(r'.*?tid=(\d+)', topic_url).groups()[0]
+                    self.comment(tid)
+        else:
+            print u'没有散金币主题'
+            
 
-			
-'''
-		for item in Items:
-			print item[0].replace('&amp;','&')
-			print item[1]
-			print item[2]
-'''
-#http://rs.xidian.edu.cn/forum.php?mod=viewthread&tid=697085&extra=page%3D1
-#http://rs.xidian.edu.cn/forum.php?mod=viewthread&amp;tid=697085&amp;extra=page%3D1
+if __name__ == '__main__':
+    print "Hello! let's login first, Rser!" 
+    username = raw_input('username:')
+    password = raw_input('password:')
 
-my_spider = Spider()
-my_spider.login()
+    my_spider = Spider(username=username, password=password)
+    my_spider.login()
 
-operate = raw_input('''
-1. dailySign
-2. guanshui
-''')
+    operate = raw_input('''
+    1. dailySign
+    2. guanshui
+    ''')
 
+    if operate == '1' :
+        my_spider.dailySign()
+    elif operate == '2' :
+        my_spider.guanShui()
 
-if operate == '1' :
-	my_spider.dailySign()
-elif operate == '2' :
-	my_spider.guanShui()
-
-
-#url = 'http://rs.xidian.edu.cn/forum.php?mod=post&infloat=yes&action=reply&fid=72&extra=&tid=697678&replysubmit=yes'
-#my_spider.Comment(url)
-
-#forum.php?mod=post&infloat=yes&action=reply&fid=72&extra=&tid=697746&replysubmit=yes
