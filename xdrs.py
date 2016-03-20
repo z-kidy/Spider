@@ -28,9 +28,13 @@ class Spider():
         'quickforward': 'yes',
         'handlekey': 'ls',
         } )
+
+        # 定义一些头部信息
         self.headers   = {
             'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:29.0) Gecko/20100101 Firefox/29.0' 
         }
+
+        # 保存cookie
         self.cookieJar = cookielib.CookieJar()
         self.opener    = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookieJar))
 
@@ -110,9 +114,6 @@ class Spider():
     def guanShui(self):
         req = self.opener.open(self.shuiQu_url)
         decode_req = req.read()
-        fq = open('rs.html','w')
-        fq.writelines(decode_req)
-
         items = re.findall(u'.*?<tbody id="no.*?<tr.*?<td.*?<th.*?<a.*?<a href="(.*?)".*?>(.*?)</a>.*?</tbody>',decode_req,re.S)
         
         if items:
@@ -135,8 +136,8 @@ if __name__ == '__main__':
     my_spider.login()
 
     operate = raw_input('''
-    1. dailySign
-    2. guanshui
+    1. 日常签到
+    2. 灌水拿金币
     ''')
 
     if operate == '1' :
