@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from peewee import *
 
-db = MySQLDatabase('RS', user='kidy', password='jindi135', charset='utf8')
+db = MySQLDatabase('RS', user='kidy', password='xxxxx', charset='utf8')
 
 class Person(Model):
     id            = IntegerField(primary_key=True)
