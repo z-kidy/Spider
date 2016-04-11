@@ -1,0 +1,15 @@
+*.py[cod]
+*.pyc
+*.egg
+*.egg-info
+
+# tmp files
+.DS_Store
+*.swp
+*.sccsc
+*~
+
+douban.py
+spider_env/
+tutorial/
+
